@@ -1,4 +1,4 @@
-package com.widespace.client;
+package com.varna.client;
 
 import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 
@@ -12,29 +12,32 @@ public class JerseyClientGet {
 
 	public static void main(String[] args) {
 		try {
-
+			ClientResponse response;
+			WebResource webResource;
 			Client client = Client.create();
 			ClientConfig cfg = new DefaultClientConfig();
 			cfg.getClasses().add(JacksonJsonProvider.class);
 			client = Client.create(cfg);
+			System.out.println("Startat!");
 			
-			WebResource webResource = client
-					.resource("http://localhost:8080/SimpleRestWeb/rest/data/ads");
+			/*
+			//String input = "{\"town\":\"Stockholm\",\"station\":\"Gullmarsplan\",\"type\":\"Biljettkontrollant\",\"decs\":\"4-5 kontrollanter står i östra uppgången!\"}";
+			String input = "{\"town\":\"Stockholm\",\"station\":\"T-Centralen\",\"type\":\"Ordningsvakt\",\"decs\":\"5-6 ordningsvakter plockar in bus på gröna perrongen!\"}";
 			
-			String input = "{\"name\":\"Interstitial Ad - Mr Universe\",\"platform\":\"Mobile\",\"type\":\"Interstitial\",\"url\":\"http://www.widespace.com\",\"target\":\"internal\",\"category\":\"Fitness and health\",\"resource\":[{\"resourceType\":\"image\",\"resourceUrl\":\"http://playground.w-s.nu/seb/pic/arnold_640x960.jpg\",\"resourceWidth\":\"640\",\"resourceHeight\":\"960\",\"mimeType\":\"image/jpeg\"}]}";
+			webResource = client.resource("http://localhost:8080/Varna/rest/data/warnings");
 			
 			// POST method
-	        ClientResponse response = webResource.accept("application/json")
+	        response = webResource.accept("application/json")
 	                .type("application/json").post(ClientResponse.class, input);
 			
 			if (response.getStatus() != 200) {
 				throw new RuntimeException("Failed : HTTP error code : "
 						+ response.getStatus());
 			}
-			
+			*/
 			// GET method
 			webResource = client
-					.resource("http://localhost:8080/SimpleRestWeb/rest/data/ads?type=Interstitial");
+					.resource("http://localhost:8080/Varna/rest/data/warnings");
 			
 			response = webResource.accept("application/json")
 					.get(ClientResponse.class);
@@ -48,6 +51,7 @@ public class JerseyClientGet {
 
 			System.out.println("Output from Server .... \n");
 			System.out.println(output);
+			
 			
 		} catch (Exception e) {
 

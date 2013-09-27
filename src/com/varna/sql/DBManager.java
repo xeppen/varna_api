@@ -1,4 +1,4 @@
-package com.widespace.sql;
+package com.varna.sql;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -6,14 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
-import com.widespace.Ad;
-import com.widespace.AdSpace;
-import com.widespace.Format;
-import com.widespace.Resource;
-import com.widespace.User;
+import com.varna.Warning;
 
 public class DBManager {
 	private Connection connect = null;
@@ -21,13 +18,248 @@ public class DBManager {
 	private PreparedStatement preparedStatement = null;
 	private ResultSet resultSet = null;
 
-	private String DATABASEURL = "mysql://localhost/widespace?";
-	private String DBUSER = "sqluser";
-	private String DBUSERPW = "sqluserpw";
+	private String DATABASEURL = "mysql://localhost/varna?";
+	private String DBUSER = "root";
+	private String DBUSERPW = "WW2a69ka";
 
 	public DBManager() {
 	}
+	
+	public void insertWarning(Warning w) {
+		System.out.println("[DBManager] Inserting warning!");
+		try {
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+			} catch (ClassNotFoundException e) {
+				System.out.println("Where is your MySQL JDBC Driver?");
+				e.printStackTrace();
+			}
 
+			try {
+				connect = DriverManager.getConnection(
+						"jdbc:" + DATABASEURL, DBUSER,
+						DBUSERPW);
+
+			} catch (SQLException e) {
+				System.out.println("Connection Failed! Check output console");
+				e.printStackTrace();
+			}
+
+			if (connect != null) {
+				System.out
+						.println("You made it, take control your database now!");
+			} else {
+				System.out.println("Failed to make connection!");
+			}
+
+			// --- Build query ---//
+			
+			String town 	= w.getTown();
+			String station 	= w.getStation();
+			String type 	= w.getType();
+			String desc 	= w.getDecs();
+			
+			String query = "('" + town + "', '" + station + "', '" + type
+					+ "', '" + desc + "')";
+			// -------------------//
+
+			// --- Generate random user ---//
+			statement = connect.createStatement();
+			String eQuery = "INSERT INTO Warnings (town, station, type, descript) VALUES ";
+			eQuery = eQuery + query;
+			System.out.println("eQuery: " + eQuery);
+			statement.execute(eQuery);
+
+			// ----------------------------//
+
+		} catch (Exception e) {
+			System.out.println("[DBManager] Something wrong: insertWarning()!");
+			System.out.println(e);
+		} finally {
+			close();
+		}
+
+	}
+	
+	public Warning getWarning()throws Exception {
+		System.out.println("[DBManager] Fetching warning!");
+		try {
+			Warning war = new Warning();
+
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+			} catch (ClassNotFoundException e) {
+				System.out.println("Where is your MySQL JDBC Driver?");
+				e.printStackTrace();
+				return war;
+			}
+
+			try {
+				connect = DriverManager.getConnection(
+						"jdbc:mysql://localhost:3306/varna", "root",
+						"WW2a69ka");
+
+			} catch (SQLException e) {
+				System.out.println("Connection Failed! Check output console");
+				e.printStackTrace();
+				return war;
+			}
+
+			if (connect != null) {
+				System.out
+						.println("You made it, take control your database now!");
+			} else {
+				System.out.println("Failed to make connection!");
+			}
+
+			// --- Build query ---//
+			String query = "";
+			// -------------------//
+
+			// --- Generate random user ---//
+			statement = connect.createStatement();
+			String eQuery = "SELECT COUNT(*) AS AvailableWarnings FROM Warnings";
+			eQuery = eQuery + query;
+			resultSet = statement.executeQuery(eQuery);
+
+			Integer AvailableWarnings = 0;
+			if (resultSet.next()) {
+				AvailableWarnings = Integer.parseInt(resultSet.getString(1));
+			}
+			Integer count = (int) Math.round(Math.random()
+					* (AvailableWarnings - 1) + 1);
+			// ----------------------------//
+
+			// --- Fetch data ---//
+			if (AvailableWarnings > 0) {
+				// Statements allow to issue SQL queries to the database
+				statement = connect.createStatement();
+				// Result set get the result of the SQL query
+				eQuery = "SELECT * FROM Warnings";
+				eQuery = eQuery + query;
+				resultSet = statement.executeQuery(eQuery);
+				int i = 1;
+				while (resultSet.next()) {
+					if (i == count) {
+						war.setTown(resultSet.getString(2));
+						war.setStation(resultSet.getString(3));
+						war.setType(resultSet.getString(4));
+						war.setDecs(resultSet.getString(5));
+					}
+					i++;
+				}
+				// -------------------//
+				return war;
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			close();
+		}
+	}
+	
+	public List<Warning> getWarnings(int amount)throws Exception {
+		System.out.println("[DBManager] Fetching warnings!");
+		try {
+			List<Warning> wars = new ArrayList<Warning>();
+			Warning war = new Warning();
+
+			try {
+				Class.forName("com.mysql.jdbc.Driver");
+			} catch (ClassNotFoundException e) {
+				System.out.println("Where is your MySQL JDBC Driver?");
+				e.printStackTrace();
+				return wars;
+			}
+
+			try {
+				connect = DriverManager.getConnection(
+						"jdbc:mysql://localhost:3306/varna", "root",
+						"WW2a69ka");
+
+			} catch (SQLException e) {
+				System.out.println("Connection Failed! Check output console");
+				e.printStackTrace();
+				return wars;
+			}
+
+			if (connect != null) {
+				System.out
+						.println("You made it, take control your database now!");
+			} else {
+				System.out.println("Failed to make connection!");
+			}
+
+			// --- Generate random user ---//
+			statement = connect.createStatement();
+			String eQuery = "SELECT COUNT(*) AS AvailableWarnings FROM Warnings";
+			resultSet = statement.executeQuery(eQuery);
+
+			Integer AvailableWarnings = 0;
+			if (resultSet.next()) {
+				AvailableWarnings = Integer.parseInt(resultSet.getString(1));
+			}
+			Integer count = (int) Math.round(Math.random()
+					* (AvailableWarnings - 1) + 1);
+			// ----------------------------//
+
+			// --- Fetch data ---//
+			if (AvailableWarnings > 0) {
+				// Statements allow to issue SQL queries to the database
+				statement = connect.createStatement();
+				// Result set get the result of the SQL query
+				eQuery = "SELECT * FROM Warnings ORDER BY created DESC";
+				resultSet = statement.executeQuery(eQuery);
+				int p = 0;
+				System.out.println("amount: " + amount);
+				System.out.println("AvailableWarnings: " + AvailableWarnings);
+				while (resultSet.next() && p < amount) {
+					if (p == AvailableWarnings) {
+						break;
+					} else{
+						
+						war.setTown(resultSet.getString(2));
+						war.setStation(resultSet.getString(3));
+						war.setType(resultSet.getString(4));
+						war.setDecs(resultSet.getString(5));
+						//war.setCreated(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(resultSet.getString(6)));
+						wars.add(war);
+						
+						System.out.println("p: " + p);
+						p++;
+					}
+				}
+				// -------------------//
+				return wars;
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			close();
+		}
+	}
+	private void close() {
+		try {
+			if (resultSet != null) {
+				resultSet.close();
+			}
+
+			if (statement != null) {
+				statement.close();
+			}
+
+			if (connect != null) {
+				connect.close();
+			}
+		} catch (Exception e) {
+
+		}
+	}
+	/*
 	public User getUser(String type, String fname, String lname)
 			throws Exception {
 		System.out.println("#####   FETCHING USER   #####");
@@ -477,23 +709,6 @@ public class DBManager {
 
 	}
 
-	private void close() {
-		try {
-			if (resultSet != null) {
-				resultSet.close();
-			}
-
-			if (statement != null) {
-				statement.close();
-			}
-
-			if (connect != null) {
-				connect.close();
-			}
-		} catch (Exception e) {
-
-		}
-	}
 
 	public void insertAd(Ad a) {
 		System.out.println("#####   INSERTING AD   #####");
@@ -575,4 +790,5 @@ public class DBManager {
 		}
 
 	}
+	*/
 }

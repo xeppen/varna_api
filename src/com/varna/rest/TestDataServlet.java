@@ -1,4 +1,7 @@
-package com.widespace.rest;
+package com.varna.rest;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -14,14 +17,40 @@ import javax.ws.rs.core.MediaType;
 
 import com.google.gson.Gson;
 
-import com.widespace.Ad;
-import com.widespace.AdSpace;
-import com.widespace.User;
-import com.widespace.sql.DBManager;
+import com.varna.Warning;
+import com.varna.sql.DBManager;
 
 @Path("/data")
 public class TestDataServlet {
-
+	DBManager manager = new DBManager();
+	
+	@POST
+	@Path("/warnings")
+	@Consumes("application/json") 
+	public Response postWarning(Warning war) {
+		manager.insertWarning(war);
+		return Response.ok(200).build();
+	}
+	
+	
+	@GET
+	@Path("/warning")
+	public Response getWarning() throws Exception{
+		Warning war = new Warning();
+		war = manager.getWarning();
+		return Response.ok(200).entity(war).build();
+	}
+	
+	@GET
+	@Path("/warnings")
+	public Response getWarnings(@DefaultValue("5") @QueryParam("amount") int amount) throws Exception{
+		
+		List<Warning> wars = new ArrayList<Warning>();
+		wars = manager.getWarnings(amount);
+		return Response.ok(200).entity(wars).build();
+	}
+	/*
+	
 	@GET
 	@Path("/users")
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -46,15 +75,7 @@ public class TestDataServlet {
 		user = manager.getUser(type, fname, lname);
 		return user;
 	}
-	
-	@POST
-	@Path("/users")
-	@Consumes("application/json") 
-	public Response postUser(User u) {
-		insertUser(u);
-		return Response.ok(200).build();
-	}
-	
+	 
 	@GET
 	@Path("/ads")
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -128,4 +149,5 @@ public class TestDataServlet {
 		DBManager manager = new DBManager();
 		manager.insertUser(u);
 	}
+	*/
 }
