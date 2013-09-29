@@ -60,13 +60,13 @@ public class DBManager {
 			String type = w.getType();
 			String desc = w.getDecs();
 
-			String query = "('" + town + "', '" + station + "', '" + type
+			String query = "('" + town + "', '" + name + "', '" + type
 					+ "', '" + desc + "')";
 			// -------------------//
 
 			// --- Generate random user ---//
 			statement = connect.createStatement();
-			String eQuery = "INSERT INTO Warnings (town, station, type, descript) VALUES ";
+			String eQuery = "INSERT INTO Warnings (town, name, type, descript) VALUES ";
 			eQuery = eQuery + query;
 			System.out.println("eQuery: " + eQuery);
 			statement.execute(eQuery);
@@ -263,11 +263,11 @@ public class DBManager {
 	}
 
 	public List<Station> getStations(String name, String town, String type,
-			String line) {
+			String line) throws Exception {
 		System.out.println("[DBManager] Fetching stations");
 		try {
 			List<Station> _stations = new ArrayList<Station>();
-			Station station;
+			Station station = null;
 
 			try {
 				Class.forName("com.mysql.jdbc.Driver");
@@ -329,29 +329,34 @@ public class DBManager {
 				}
 			}
 			// -------------------//
+			
+			System.out.println("Asd: " + station.getStation());
+			
 
 			// --- Fetch data ---//
 			// Statements allow to issue SQL queries to the database
 			statement = connect.createStatement();
 			// Result set get the result of the SQL query
-			eQuery = "SELECT * FROM Stations";
+			String eQuery = "SELECT * FROM Stations";
 			eQuery = eQuery + query;
+			System.out.println("eQuery: " + eQuery);
 			resultSet = statement.executeQuery(eQuery);
 			while (resultSet.next()) {
+				System.out.println("id: " + resultSet.getString(1));
 				station.setStation(resultSet.getString(2));
-				station.setType(resultSet.getString(2));
-				station.setName(resultSet.getString(2));
-				station.setName(resultSet.getString(2));
+				station.setType(resultSet.getString(3));
+				station.setTown(resultSet.getString(4));
+				station.setLine(resultSet.getString(5));
+				_stations.add(station);
 			}
 			// -------------------//
-			return user;
+			return _stations;
 
 		} catch (Exception e) {
 			throw e;
 		} finally {
 			close();
 		}
-		return null;
 	}
 
 	private void close() {

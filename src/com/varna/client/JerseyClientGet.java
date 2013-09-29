@@ -37,7 +37,7 @@ public class JerseyClientGet {
 			*/
 			// GET method
 			webResource = client
-					.resource("http://localhost:8080/Varna/rest/data/warnings");
+					.resource("http://localhost:8080/Varna/rest/data/stations");
 			
 			response = webResource.accept("application/json")
 					.get(ClientResponse.class);

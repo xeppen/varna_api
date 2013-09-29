@@ -1,18 +1,19 @@
 package com.varna;
 
 public class Station {
-	String name = "";
 	String town = "";
 	String type = "";
 	String line = "";
-	public String getName() {
-		return name;
-	}
-	public void setName(String name) {
-		this.name = name;
-	}
+	String station = "";
+	
 	public String getTown() {
 		return town;
+	}
+	public String getStation() {
+		return station;
+	}
+	public void setStation(String station) {
+		this.station = station;
 	}
 	public void setTown(String town) {
 		this.town = town;
