@@ -20,9 +20,9 @@ public class DBManager {
 	private PreparedStatement preparedStatement = null;
 	private ResultSet resultSet = null;
 
-	private String DATABASEURL = "mysql://localhost/varna?";
-	private String DBUSER = "root";
-	private String DBUSERPW = "WW2a69ka";
+	private String DATABASEURL = "mysql://xeppen.zapto.org:3306/varna";
+	private String DBUSER = "varna";
+	private String DBUSERPW = "VarnaAPI28108";
 
 	public DBManager() {
 	}
@@ -60,17 +60,16 @@ public class DBManager {
 			String type = w.getType();
 			String desc = w.getDecs();
 
-			String query = "('" + town + "', '" + name + "', '" + type
-					+ "', '" + desc + "')";
+			String query = "('" + town + "', '" + name + "', '" + type + "', '"
+					+ desc + "')";
 			// -------------------//
 
 			// --- Generate random user ---//
 			statement = connect.createStatement();
-			String eQuery = "INSERT INTO Warnings (town, name, type, descript) VALUES ";
+			String eQuery = "INSERT INTO Warnings (town, station, type, descript) VALUES ";
 			eQuery = eQuery + query;
-			System.out.println("eQuery: " + eQuery);
 			statement.execute(eQuery);
-
+			System.out.println("[DBManager] Warning submitted");
 			// ----------------------------//
 
 		} catch (Exception e) {
@@ -82,7 +81,7 @@ public class DBManager {
 
 	}
 
-	public Warning getWarning() throws Exception {
+	public Warning getWarning(String id) throws Exception {
 		System.out.println("[DBManager] Fetching warning!");
 		try {
 			Warning war = new Warning();
@@ -115,45 +114,28 @@ public class DBManager {
 
 			// --- Build query ---//
 			String query = "";
+			if (id != null) {
+				query = "WHERE id = " + id;
+			}
 			// -------------------//
 
-			// --- Generate random user ---//
+			// --- Fetch data ---//
+			// Statements allow to issue SQL queries to the database
 			statement = connect.createStatement();
-			String eQuery = "SELECT COUNT(*) AS AvailableWarnings FROM Warnings";
+			// Result set get the result of the SQL query
+			String eQuery = "SELECT * FROM Warnings";
 			eQuery = eQuery + query;
 			resultSet = statement.executeQuery(eQuery);
-
-			Integer AvailableWarnings = 0;
-			if (resultSet.next()) {
-				AvailableWarnings = Integer.parseInt(resultSet.getString(1));
+			int i = 1;
+			while (resultSet.next()) {
+				war.setTown(resultSet.getString(2));
+				war.setStation(resultSet.getString(3));
+				war.setType(resultSet.getString(4));
+				war.setDecs(resultSet.getString(5));
+				i++;
 			}
-			Integer count = (int) Math.round(Math.random()
-					* (AvailableWarnings - 1) + 1);
-			// ----------------------------//
-
-			// --- Fetch data ---//
-			if (AvailableWarnings > 0) {
-				// Statements allow to issue SQL queries to the database
-				statement = connect.createStatement();
-				// Result set get the result of the SQL query
-				eQuery = "SELECT * FROM Warnings";
-				eQuery = eQuery + query;
-				resultSet = statement.executeQuery(eQuery);
-				int i = 1;
-				while (resultSet.next()) {
-					if (i == count) {
-						war.setTown(resultSet.getString(2));
-						war.setStation(resultSet.getString(3));
-						war.setType(resultSet.getString(4));
-						war.setDecs(resultSet.getString(5));
-					}
-					i++;
-				}
-				// -------------------//
-				return war;
-			} else {
-				return null;
-			}
+			// -------------------//
+			return war;
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -161,12 +143,10 @@ public class DBManager {
 		}
 	}
 
-	public List<Warning> getWarnings(int amount, Stations stations)
-			throws Exception {
+	public List<Warning> getWarnings(int amount, String[] s) throws Exception {
 		System.out.println("[DBManager] Fetching warnings!");
 		try {
 			List<Warning> wars = new ArrayList<Warning>();
-			Warning war = new Warning();
 
 			try {
 				Class.forName("com.mysql.jdbc.Driver");
@@ -177,9 +157,8 @@ public class DBManager {
 			}
 
 			try {
-				connect = DriverManager
-						.getConnection("jdbc:mysql://localhost:3306/varna",
-								"root", "WW2a69ka");
+				connect = DriverManager.getConnection("jdbc:" + DATABASEURL,
+						DBUSER, DBUSERPW);
 
 			} catch (SQLException e) {
 				System.out.println("Connection Failed! Check output console");
@@ -194,67 +173,41 @@ public class DBManager {
 				System.out.println("Failed to make connection!");
 			}
 
-			// --- Generate random user ---//
-			boolean first = true;
+			// --- Build query --- //
 			String query = "";
-			if (stations.size() > 0) {
-				for (int i = 0; i < stations.size(); i++) {
-					if (first) {
-						query = " WHERE town LIKE '" + stations.get(i) + "'";
-						first = false;
-					} else {
-						query = query + " OR town LIKE '" + stations.get(i)
-								+ "'";
+			if (s.length > 0) {
+				query = " WHERE station LIKE '" + s[0] + "'";
+				if (s.length > 1) {
+					for (int i = 1; i < s.length; i++) {
+						query = query + " OR station LIKE '" + s[i] + "'";
 					}
 				}
 			}
-			statement = connect.createStatement();
-			String eQuery = "SELECT COUNT(*) AS AvailableWarnings FROM Warnings";
-			eQuery = eQuery + query;
-			System.out.println("eQuery: " + eQuery);
-			resultSet = statement.executeQuery(eQuery);
 
-			Integer AvailableWarnings = 0;
-			if (resultSet.next()) {
-				AvailableWarnings = Integer.parseInt(resultSet.getString(1));
-			}
-			Integer count = (int) Math.round(Math.random()
-					* (AvailableWarnings - 1) + 1);
-			// ----------------------------//
+			// ------------------- //
 
 			// --- Fetch data ---//
-			if (AvailableWarnings > 0) {
-				// Statements allow to issue SQL queries to the database
-				statement = connect.createStatement();
-				// Result set get the result of the SQL query
-				eQuery = "SELECT * FROM Warnings" + query
-						+ " ORDER BY created DESC";
-				resultSet = statement.executeQuery(eQuery);
-				int p = 0;
-				System.out.println("amount: " + amount);
-				System.out.println("AvailableWarnings: " + AvailableWarnings);
-				while (resultSet.next() && p < amount) {
-					if (p == AvailableWarnings) {
-						break;
-					} else {
-
-						war.setTown(resultSet.getString(2));
-						war.setStation(resultSet.getString(3));
-						war.setType(resultSet.getString(4));
-						war.setDecs(resultSet.getString(5));
-						// war.setCreated(new
-						// SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(resultSet.getString(6)));
-						wars.add(war);
-
-						System.out.println("p: " + p);
-						p++;
-					}
-				}
-				// -------------------//
-				return wars;
-			} else {
-				return null;
+			// Statements allow to issue SQL queries to the database
+			statement = connect.createStatement();
+			// Result set get the result of the SQL query
+			String eQuery = "SELECT * FROM Warnings" + query
+					+ " ORDER BY created DESC";
+			System.out.println("eQuery: " + eQuery);
+			resultSet = statement.executeQuery(eQuery);
+			int p = 0;
+			while (resultSet.next() && p < amount) {
+				Warning war = new Warning();
+				war.setTown(resultSet.getString(2));
+				war.setStation(resultSet.getString(3));
+				war.setType(resultSet.getString(4));
+				war.setDecs(resultSet.getString(5));
+				war.setCreated(resultSet.getString(6));
+				wars.add(war);
+				System.out.println("war.getStation(): " + war.getStation());
+				p++;
 			}
+			// -------------------//
+			return wars;
 		} catch (Exception e) {
 			throw e;
 		} finally {
@@ -267,7 +220,7 @@ public class DBManager {
 		System.out.println("[DBManager] Fetching stations");
 		try {
 			List<Station> _stations = new ArrayList<Station>();
-			Station station = null;
+			Station station = new Station();
 
 			try {
 				Class.forName("com.mysql.jdbc.Driver");
@@ -278,9 +231,8 @@ public class DBManager {
 			}
 
 			try {
-				connect = DriverManager
-						.getConnection("jdbc:mysql://localhost:3306/varna",
-								"root", "WW2a69ka");
+				connect = DriverManager.getConnection("jdbc:" + DATABASEURL,
+						DBUSER, DBUSERPW);
 
 			} catch (SQLException e) {
 				System.out.println("Connection Failed! Check output console");
@@ -329,9 +281,6 @@ public class DBManager {
 				}
 			}
 			// -------------------//
-			
-			System.out.println("Asd: " + station.getStation());
-			
 
 			// --- Fetch data ---//
 			// Statements allow to issue SQL queries to the database
@@ -342,14 +291,18 @@ public class DBManager {
 			System.out.println("eQuery: " + eQuery);
 			resultSet = statement.executeQuery(eQuery);
 			while (resultSet.next()) {
-				System.out.println("id: " + resultSet.getString(1));
-				station.setStation(resultSet.getString(2));
-				station.setType(resultSet.getString(3));
-				station.setTown(resultSet.getString(4));
-				station.setLine(resultSet.getString(5));
-				_stations.add(station);
+				Station s = new Station();
+				s.setStation(resultSet.getString(2));
+				s.setType(resultSet.getString(3));
+				s.setTown(resultSet.getString(4));
+				s.setLine(resultSet.getString(5));
+				_stations.add(s);
 			}
 			// -------------------//
+			System.out.println("Första: " + _stations.get(2).getStation());
+			System.out.println("Andra: " + _stations.get(3).getStation());
+			System.out.println("Tredje: " + _stations.get(4).getStation());
+			System.out.println("Fjärde: " + _stations.get(5).getStation());
 			return _stations;
 
 		} catch (Exception e) {
