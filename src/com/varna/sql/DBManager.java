@@ -95,9 +95,8 @@ public class DBManager {
 			}
 
 			try {
-				connect = DriverManager
-						.getConnection("jdbc:mysql://localhost:3306/varna",
-								"root", "WW2a69ka");
+				connect = DriverManager.getConnection("jdbc:" + DATABASEURL,
+						DBUSER, DBUSERPW);
 
 			} catch (SQLException e) {
 				System.out.println("Connection Failed! Check output console");
